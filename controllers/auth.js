@@ -6,13 +6,14 @@ const User = require("../models/user");
 const errorUtils = require("../utils/error");
 
 exports.signup = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    errorUtils.throwError("Validation failed", 422, errors);
-  }
-
-  const { email, name, password } = req.body;
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      errorUtils.throwError("Validation failed", 422, errors);
+    }
+
+    const { email, name, password } = req.body;
+
     const hashedPw = await bcrypt.hash(password, 12);
     const user = new User({
       email,
