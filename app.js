@@ -64,7 +64,7 @@ mongoose
     // { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then((result) => {
-    const server = app.listen(process.env.PORT || 3000);
+    const server = app.listen(process.env.PORT || 8080);
     const io = require("./socket").init(server);
     io.on("connection", (socket) => {
       console.log("socket");
