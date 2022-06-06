@@ -1,18 +1,18 @@
-const express = require("express");
-const { body } = require("express-validator");
+import express from "express";
+import { body } from "express-validator";
 
-const userController = require("../controllers/user");
-const isAuth = require("../middleware/is-auth");
+import { getUserStatus, updateUserStatus } from "../controllers/user.js";
+import isAuth from "../middleware/is-auth.js";
 
 const router = express.Router();
 
-router.get("/status", isAuth, userController.getUserStatus);
+router.get("/status", isAuth, getUserStatus);
 
 router.post(
   "/status",
   isAuth,
   [body("status", "Invalid status").trim().notEmpty()],
-  userController.updateUserStatus
+  updateUserStatus
 );
 
-module.exports = router;
+export default router;

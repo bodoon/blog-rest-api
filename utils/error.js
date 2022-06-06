@@ -1,4 +1,4 @@
-module.exports.throwError = (
+export const throwError = (
   msg = "Something went wrong",
   code = 500,
   data = null
@@ -9,7 +9,7 @@ module.exports.throwError = (
   throw error;
 };
 
-module.exports.forwardError = (err, nextFunc) => {
+export const forwardError = (err, nextFunc) => {
   if (!err.statusCode) {
     err.statusCode = 500;
   }

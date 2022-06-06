@@ -1,13 +1,16 @@
-const fs = require("fs");
-const path = require("path");
-const { validationResult } = require("express-validator");
+import fs from "fs";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import { validationResult } from "express-validator";
 
-const io = require("../socket");
-const Post = require("../models/post");
-const User = require("../models/user");
-const errorUtils = require("../utils/error");
+import io from "../socket.js";
+import Post from "../models/post.js";
+import User from "../models/user.js";
+import { throwError, forwardError } from "../utils/error.js";
 
-exports.getPosts = async (req, res, next) => {
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export const getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2;
   try {
@@ -20,7 +23,7 @@ exports.getPosts = async (req, res, next) => {
       .limit(perPage);
 
     if (!posts) {
-      errorUtils.throwError("Posts not found", 404);
+      throwError("Posts not found", 404);
     }
 
     res.status(200).json({
@@ -29,17 +32,17 @@ exports.getPosts = async (req, res, next) => {
       totalItems,
     });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };
 
-exports.getPost = async (req, res, next) => {
+export const getPost = async (req, res, next) => {
   const postId = req.params.postId;
 
   try {
     const post = await Post.findById(postId).populate("creator");
     if (!post) {
-      errorUtils.throwError("Post not found", 404);
+      throwError("Post not found", 404);
     }
 
     res.status(200).json({
@@ -47,19 +50,19 @@ exports.getPost = async (req, res, next) => {
       post,
     });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };
 
-exports.createPost = async (req, res, next) => {
+export const createPost = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    errorUtils.throwError("Validation failed", 422);
+    throwError("Validation failed", 422);
   }
 
   if (!req.file) {
-    errorUtils.throwError("Invalid image", 422);
+    throwError("Invalid image", 422);
   }
 
   try {
@@ -77,7 +80,7 @@ exports.createPost = async (req, res, next) => {
 
     const user = await User.findById(req.userId);
     if (!user) {
-      errorUtils.throwError("User not found", 404);
+      throwError("User not found", 404);
     }
     user.posts.push(post);
     await user.save();
@@ -90,14 +93,14 @@ exports.createPost = async (req, res, next) => {
       creator: { _id: user._id, name: user.name },
     });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };
 
-exports.updatePost = async (req, res, next) => {
+export const updatePost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    errorUtils.throwError("Validation failed", 422);
+    throwError("Validation failed", 422);
   }
 
   let imageUrl = req.body.image;
@@ -106,7 +109,7 @@ exports.updatePost = async (req, res, next) => {
   }
 
   if (!imageUrl) {
-    errorUtils.throwError("Invalid image", 422);
+    throwError("Invalid image", 422);
   }
 
   const postId = req.params.postId;
@@ -117,11 +120,11 @@ exports.updatePost = async (req, res, next) => {
     const post = await Post.findById(postId).populate("creator");
 
     if (!post) {
-      errorUtils.throwError("Post not found", 404);
+      throwError("Post not found", 404);
     }
 
     if (post.creator._id.toString() !== req.userId.toString()) {
-      errorUtils.throwError("Not authorized", 403);
+      throwError("Not authorized", 403);
     }
 
     if (imageUrl !== post.imageUrl) {
@@ -141,22 +144,22 @@ exports.updatePost = async (req, res, next) => {
       post: result,
     });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };
 
-exports.deletePost = async (req, res, next) => {
+export const deletePost = async (req, res, next) => {
   const { postId } = req.params;
 
   try {
     const post = await Post.findById(postId);
 
     if (!post) {
-      errorUtils.throwError("Post not found", 404);
+      throwError("Post not found", 404);
     }
 
     if (post.creator.toString() !== req.userId.toString()) {
-      errorUtils.throwError("Not authorized", 403);
+      throwError("Not authorized", 403);
     }
 
     clearImage(post.imageUrl);
@@ -173,7 +176,7 @@ exports.deletePost = async (req, res, next) => {
       message: "Post deleted successfully!",
     });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };
 

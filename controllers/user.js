@@ -1,23 +1,23 @@
-const User = require("../models/user");
-const errorUtils = require("../utils/error");
-const { validationResult } = require("express-validator");
+import User from "../models/user.js";
+import { throwError, forwardError } from "../utils/error.js";
+import { validationResult } from "express-validator";
 
-exports.getUserStatus = async (req, res, next) => {
+export const getUserStatus = async (req, res, next) => {
   try {
     const user = await User.findById(req.userId);
     if (!user) {
-      errorUtils.throwError("User not found", 404);
+      throwError("User not found", 404);
     }
     res.status(200).json({ status: user.status });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };
 
-exports.updateUserStatus = async (req, res, next) => {
+export const updateUserStatus = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    errorUtils.throwError("Ivalid user status", 422, errors);
+    throwError("Ivalid user status", 422, errors);
   }
 
   const { status } = req.body;
@@ -25,7 +25,7 @@ exports.updateUserStatus = async (req, res, next) => {
     const user = await User.findById(req.userId);
 
     if (!user) {
-      errorUtils.throwError("User not found", 404);
+      throwError("User not found", 404);
     }
 
     user.status = status;
@@ -35,6 +35,6 @@ exports.updateUserStatus = async (req, res, next) => {
       message: "User status updated successfully!",
     });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };

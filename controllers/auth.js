@@ -1,15 +1,15 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { validationResult } = require("express-validator");
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { validationResult } from "express-validator";
 
-const User = require("../models/user");
-const errorUtils = require("../utils/error");
+import User from "../models/user.js";
+import { throwError, forwardError } from "../utils/error.js";
 
-exports.signup = async (req, res, next) => {
+export const signup = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      errorUtils.throwError("Validation failed", 422, errors);
+      throwError("Validation failed", 422, errors);
     }
 
     const { email, name, password } = req.body;
@@ -24,22 +24,22 @@ exports.signup = async (req, res, next) => {
 
     res.status(201).json({ message: "User created", userId: result._id });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };
 
-module.exports.login = async (req, res, next) => {
+export const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      errorUtils.throwError("User not found", 401);
+      throwError("User not found", 401);
     }
 
     const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
-      errorUtils.throwError("Wrong password", 401);
+      throwError("Wrong password", 401);
     }
 
     const token = jwt.sign(
@@ -53,6 +53,6 @@ module.exports.login = async (req, res, next) => {
 
     res.status(200).json({ token, userId: user._id.toString() });
   } catch (err) {
-    errorUtils.forwardError(err, next);
+    forwardError(err, next);
   }
 };

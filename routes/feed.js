@@ -1,15 +1,21 @@
-const express = require("express");
-const { body } = require("express-validator");
+import express from "express";
+import { body } from "express-validator";
 
-const feedController = require("../controllers/feed");
-const isAuth = require("../middleware/is-auth");
+import {
+  getPost,
+  getPosts,
+  createPost,
+  updatePost,
+  deletePost,
+} from "../controllers/feed.js";
+import isAuth from "../middleware/is-auth.js";
 
 const router = express.Router();
 
 // GET /feed/posts
-router.get("/posts", feedController.getPosts);
+router.get("/posts", getPosts);
 
-router.get("/post/:postId", feedController.getPost);
+router.get("/post/:postId", getPost);
 
 // POST /feed/post
 router.post(
@@ -19,7 +25,7 @@ router.post(
     body("title", "Title is invalid!").trim().isLength({ min: 5 }),
     body("content", "Content is invalid!").trim().isLength({ min: 5 }),
   ],
-  feedController.createPost
+  createPost
 );
 
 router.put(
@@ -29,9 +35,9 @@ router.put(
     body("title", "Title is invalid!").trim().isLength({ min: 5 }),
     body("content", "Content is invalid!").trim().isLength({ min: 5 }),
   ],
-  feedController.updatePost
+  updatePost
 );
 
-router.delete("/post/:postId", isAuth, feedController.deletePost);
+router.delete("/post/:postId", isAuth, deletePost);
 
-module.exports = router;
+export default router;

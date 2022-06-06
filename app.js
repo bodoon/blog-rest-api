@@ -1,12 +1,16 @@
-const path = require("path");
-const express = require("express");
-const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
-const multer = require("multer");
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import express from "express";
+import bodyParser from "body-parser";
+import mongoose from "mongoose";
+import multer from "multer";
 
-const feedRoutes = require("./routes/feed");
-const authRoutes = require("./routes/auth");
-const userRoutes = require("./routes/user");
+import feedRoutes from "./routes/feed.js";
+import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/user.js";
+import IO from "./socket.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.5iv8j.mongodb.net/${process.env.MONGO_DB}`;
 
@@ -65,7 +69,7 @@ mongoose
   )
   .then((result) => {
     const server = app.listen(process.env.PORT || 8080);
-    const io = require("./socket").init(server);
+    const io = IO.init(server);
     io.on("connection", (socket) => {
       console.log("socket");
     });

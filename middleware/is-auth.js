@@ -1,16 +1,16 @@
-const jwt = require("jsonwebtoken");
-const errorUtils = require("../utils/error");
+import jwt from "jsonwebtoken";
+import { throwError } from "../utils/error.js";
 
-module.exports = (req, res, next) => {
+export default (req, res, next) => {
   const token = req.get("Authorization")?.split(" ")[1];
   let decodedToken;
   try {
     decodedToken = jwt.verify(token, "somesupersecretlongstring");
   } catch (error) {
-    errorUtils.throwError("Token verifying failed");
+    throwError("Token verifying failed");
   }
   if (!decodedToken) {
-    errorUtils.throwError("Authentication failed", 401);
+    throwError("Authentication failed", 401);
   }
   req.userId = decodedToken.userId;
   next();
